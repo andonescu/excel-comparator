@@ -48,7 +48,7 @@ public class Comparator {
             Iterator rows = sheet.rowIterator();
 
             if (!XLSUtil.isXLSFile(fileTwo)) {
-                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo);
+                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo, fileOne);
             }
             InputStream input2 = new BufferedInputStream(
                     new FileInputStream(fileTwo));
@@ -133,36 +133,49 @@ public class Comparator {
         if (a == null && b == null) {
             return "";
         }
-        if (a != null && b == null || a== null && b != null || a.getCellType() != b.getCellType()) {
+        if (a != null && b == null || a== null && b != null ) {
+//                || a.getCellType() != b.getCellType()) {
             return " different cell types - please check ";
         }
-
+       String valueA = "";
         switch ((a.getCellType())) {
             case HSSFCell.CELL_TYPE_NUMERIC:
-                if (a.getNumericCellValue() != b.getNumericCellValue()) {
-                    sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getNumericCellValue());
-                }
-                break;
-            case HSSFCell.CELL_TYPE_STRING:
-                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-                }
-                break;
-            case HSSFCell.CELL_TYPE_BLANK:
-                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-                }
-                break;
-            case HSSFCell.CELL_TYPE_BOOLEAN:
-                if (a.getBooleanCellValue() != b.getBooleanCellValue()) {
-                    sb.append(" different values " + a.getBooleanCellValue() + " ::: " + b.getBooleanCellValue());
-                }
-                break;
-            default:
-                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-                }
+                valueA = new Double(a.getNumericCellValue()).toString();
+        break;
+            default :
+                valueA = a.getStringCellValue();
         }
+
+        if (!valueA.trim().equals(b.getStringCellValue().trim())) {
+            sb.append(" different values " + valueA + " ::: " + b.getStringCellValue());
+        }
+
+//        switch ((a.getCellType())) {
+//            case HSSFCell.CELL_TYPE_NUMERIC:
+//                if (a.getNumericCellValue() != b.getNumericCellValue()) {
+//                    sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getNumericCellValue());
+//                }
+//                break;
+//            case HSSFCell.CELL_TYPE_STRING:
+//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
+//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
+//                }
+//                break;
+//            case HSSFCell.CELL_TYPE_BLANK:
+//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
+//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
+//                }
+//                break;
+//            case HSSFCell.CELL_TYPE_BOOLEAN:
+//                if (a.getBooleanCellValue() != b.getBooleanCellValue()) {
+//                    sb.append(" different values " + a.getBooleanCellValue() + " ::: " + b.getBooleanCellValue());
+//                }
+//                break;
+//            default:
+//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
+//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
+//                }
+//        }
 
         return sb.toString();
     }

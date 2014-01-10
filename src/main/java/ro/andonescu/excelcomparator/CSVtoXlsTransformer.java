@@ -1,9 +1,7 @@
 package ro.andonescu.excelcomparator;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
@@ -17,9 +15,15 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
-    public String transformer(String fName) throws IOException {
+    public String transformer(String fName, String refXLS) throws IOException {
 
         createOutputFolder();
+
+        InputStream input = new BufferedInputStream(
+                new FileInputStream(refXLS));
+        POIFSFileSystem fs = new POIFSFileSystem(input);
+        HSSFWorkbook  firstWorkbook = new HSSFWorkbook(fs);
+        HSSFSheet refSHEET = firstWorkbook.getSheetAt(0);
 
         ArrayList arList = null;
         ArrayList al = null;
@@ -45,21 +49,33 @@ public class CSVtoXlsTransformer {
         try {
             HSSFWorkbook hwb = new HSSFWorkbook();
             HSSFSheet sheet = hwb.createSheet("new sheet");
+            HSSFCellStyle style = hwb.createCellStyle();
+
+
             for (int k = 0; k < arList.size(); k++) {
                 ArrayList rowDataList = (ArrayList) arList.get(k);
                 HSSFRow row = sheet.createRow((short) 0 + k);
+                HSSFRow refRow =    refSHEET.getRow(k);
                 for (int p = 0; p < rowDataList.size(); p++) {
                     HSSFCell cell = row.createCell( p);
-                    String columnData = rowDataList.get(p).toString();
-                    if (isNumeric(columnData)) {
 
-                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(columnData);
-
-                    } else {
+                    String columnData = rowDataList.get(p).toString().trim().replace("\"","");
+//                    if (XLSUtil.isNumeric(columnData)) {
+//
+////                        if ( refRow.getCell(p) != null && refRow.getCell(p).getCellStyle() != null) {
+////                            style.setDataFormat(refRow.getCell(p).getCellStyle().getDataFormat());
+////                        }
+//                        cell.setCellStyle(style);
+//                        cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+//
+//                        cell.setCellValue(columnData);
+//
+//                    } else {
                         cell.setCellType(Cell.CELL_TYPE_STRING);
                         cell.setCellValue(columnData);
-                    }
+//                    }
+
+
                 }
                 System.out.println();
             }
@@ -85,10 +101,6 @@ public class CSVtoXlsTransformer {
     private void createOutputFolder() {
         XLSUtil.verifyAndCreateFolder(Constants.OUTPUT_PATH);
         XLSUtil.verifyAndCreateFolder(Constants.TEMP_FOLDER);
-    }
-
-    public boolean isNumeric(String s) {
-        return s.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)");
     }
 
 }

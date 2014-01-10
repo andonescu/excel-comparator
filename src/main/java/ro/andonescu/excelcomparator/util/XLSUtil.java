@@ -37,4 +37,8 @@ public class XLSUtil {
             folder.mkdir();
         }
     }
+
+    public static boolean isNumeric(String s) {
+        return s.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)");
+    }
 }
