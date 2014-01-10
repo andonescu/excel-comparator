@@ -5,8 +5,16 @@ package ro.andonescu.excelcomparator.util;
  */
 public class Constants {
 
-    public static String OUTPUT_PATH = "d:/excel-compare";
+    public static String OUTPUT_PATH = "C:/Users/%s/Desktop/OES-PoC";
 
-    public static String TEMP_FOLDER = OUTPUT_PATH + "/temp";
+    public static String TEMP_FOLDER ;
 
+    static {
+        update();
+    }
+
+
+    public static void update(){
+        TEMP_FOLDER = OUTPUT_PATH + "/temp";
+    }
 }
