@@ -48,7 +48,7 @@ public class Comparator {
             Iterator rows = sheet.rowIterator();
 
             if (!XLSUtil.isXLSFile(fileTwo)) {
-                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo, fileOne);
+                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo);
             }
             InputStream input2 = new BufferedInputStream(
                     new FileInputStream(fileTwo));
@@ -70,15 +70,16 @@ public class Comparator {
                 //iterating each row in the first excel
                 verificationRow++;
                 HSSFRow row = (HSSFRow) rows.next();
-
                 Iterator celIterator = row.cellIterator();
+                HSSFRow row2 = sheet2.getRow(verificationRow);
+
                 int verificationColumn = -1;
                 while (celIterator.hasNext()) {
                     verificationColumn++;
                     HSSFCell cellOne = (HSSFCell) celIterator.next();
                     // now we will compare the current cel with the one from the other file
 
-                    HSSFRow row2 = sheet2.getRow(verificationRow);
+
                     HSSFCell cellTwo = row2.getCell(verificationColumn);
                     String result = compareCells(cellOne, cellTwo);
                     if (!result.isEmpty()) {

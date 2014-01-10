@@ -15,15 +15,9 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
-    public String transformer(String fName, String refXLS) throws IOException {
+    public String transformer(String fName) throws IOException {
 
         createOutputFolder();
-
-        InputStream input = new BufferedInputStream(
-                new FileInputStream(refXLS));
-        POIFSFileSystem fs = new POIFSFileSystem(input);
-        HSSFWorkbook  firstWorkbook = new HSSFWorkbook(fs);
-        HSSFSheet refSHEET = firstWorkbook.getSheetAt(0);
 
         ArrayList arList = null;
         ArrayList al = null;
@@ -55,27 +49,11 @@ public class CSVtoXlsTransformer {
             for (int k = 0; k < arList.size(); k++) {
                 ArrayList rowDataList = (ArrayList) arList.get(k);
                 HSSFRow row = sheet.createRow((short) 0 + k);
-                HSSFRow refRow =    refSHEET.getRow(k);
                 for (int p = 0; p < rowDataList.size(); p++) {
-                    HSSFCell cell = row.createCell( p);
-
+                    HSSFCell cell = row.createCell(p);
                     String columnData = rowDataList.get(p).toString().trim().replace("\"","");
-//                    if (XLSUtil.isNumeric(columnData)) {
-//
-////                        if ( refRow.getCell(p) != null && refRow.getCell(p).getCellStyle() != null) {
-////                            style.setDataFormat(refRow.getCell(p).getCellStyle().getDataFormat());
-////                        }
-//                        cell.setCellStyle(style);
-//                        cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-//
-//                        cell.setCellValue(columnData);
-//
-//                    } else {
                         cell.setCellType(Cell.CELL_TYPE_STRING);
                         cell.setCellValue(columnData);
-//                    }
-
-
                 }
                 System.out.println();
             }
