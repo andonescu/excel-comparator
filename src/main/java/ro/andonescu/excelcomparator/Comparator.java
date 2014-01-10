@@ -104,24 +104,24 @@ public class Comparator {
             throw new RuntimeException("no workbook processed!");
         }
 
-        verifyFolder();
+        verifyFolder(Constants.OUTPUT_PATH);
         // Write the output to a file
         FileOutputStream fileOut = new FileOutputStream(Constants.OUTPUT_PATH + String.format("/%s-A-to-B.xls", compareDate.toString().replaceAll("[: ]", "_")));
         firstWorkbook.write(fileOut);
         fileOut.close();
     }
 
-    private void verifyFolder() {
-        File folder = new File(Constants.OUTPUT_PATH);
+    private void verifyFolder(String filePath) {
+        File folder = new File(filePath);
         if (!folder.exists()) {
-            folder.mkdir();
+            folder.mkdirs();
         }
     }
 
     public void logFile() throws IOException {
-        verifyFolder();
+        verifyFolder(Constants.OUTPUT_PATH_LOG);
 
-        BufferedWriter out = new BufferedWriter(new FileWriter(Constants.OUTPUT_PATH + String.format("/%s-log-A-to-B.txt", compareDate.toString().replaceAll("[: ]", "_"))));
+        BufferedWriter out = new BufferedWriter(new FileWriter(Constants.OUTPUT_PATH_LOG + String.format("/%s-log-A-to-B.txt", compareDate.toString().replaceAll("[: ]", "_"))));
         out.write(log.toString());
         out.flush();
         out.close();

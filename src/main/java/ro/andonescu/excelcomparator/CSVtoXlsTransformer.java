@@ -46,27 +46,20 @@ public class CSVtoXlsTransformer {
             HSSFWorkbook hwb = new HSSFWorkbook();
             HSSFSheet sheet = hwb.createSheet("new sheet");
             for (int k = 0; k < arList.size(); k++) {
-                ArrayList ardata = (ArrayList) arList.get(k);
+                ArrayList rowDataList = (ArrayList) arList.get(k);
                 HSSFRow row = sheet.createRow((short) 0 + k);
-                for (int p = 0; p < ardata.size(); p++) {
-                    HSSFCell cell = row.createCell((short) p);
-                    String data = ardata.get(p).toString();
-                    if (data.startsWith("=")) {
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        data = data.replaceAll("\"", "");
-                        data = data.replaceAll("=", "");
-                        cell.setCellValue(data);
-                    } else if (data.startsWith("\"")) {
-                        data = data.replaceAll("\"", "");
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        cell.setCellValue(data);
-                    } else {
-                        data = data.replaceAll("\"", "");
+                for (int p = 0; p < rowDataList.size(); p++) {
+                    HSSFCell cell = row.createCell( p);
+                    String columnData = rowDataList.get(p).toString();
+                    if (isNumeric(columnData)) {
+
                         cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                        cell.setCellValue(data);
+                        cell.setCellValue(columnData);
+
+                    } else {
+                        cell.setCellType(Cell.CELL_TYPE_STRING);
+                        cell.setCellValue(columnData);
                     }
-                    //*/
-                    //   cell.setCellValue(ardata.get(p).toString());
                 }
                 System.out.println();
             }
@@ -92,6 +85,10 @@ public class CSVtoXlsTransformer {
     private void createOutputFolder() {
         XLSUtil.verifyAndCreateFolder(Constants.OUTPUT_PATH);
         XLSUtil.verifyAndCreateFolder(Constants.TEMP_FOLDER);
+    }
+
+    public boolean isNumeric(String s) {
+        return s.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)");
     }
 
 }
