@@ -7,4 +7,6 @@ public class Constants {
 
     public static String OUTPUT_PATH = "d:/excel-compare";
 
+    public static String TEMP_FOLDER = OUTPUT_PATH + "/temp";
+
 }

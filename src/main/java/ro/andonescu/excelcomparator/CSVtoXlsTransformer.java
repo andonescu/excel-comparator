@@ -1,0 +1,97 @@
+package ro.andonescu.excelcomparator;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import ro.andonescu.excelcomparator.util.Constants;
+import ro.andonescu.excelcomparator.util.XLSUtil;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Date;
+
+/**
+ * Created by iandonescu on 1/10/14.
+ */
+public class CSVtoXlsTransformer {
+
+    public String transformer(String fName) throws IOException {
+
+        createOutputFolder();
+
+        ArrayList arList = null;
+        ArrayList al = null;
+        String thisLine;
+        int count = 0;
+        File file = new File(fName);
+        FileInputStream fis = new FileInputStream(file);
+        DataInputStream myInput = new DataInputStream(fis);
+
+        int i = 0;
+        arList = new ArrayList();
+        while ((thisLine = myInput.readLine()) != null) {
+            al = new ArrayList();
+            String strar[] = thisLine.split("\t");
+            for (int j = 0; j < strar.length; j++) {
+                al.add(strar[j]);
+            }
+            arList.add(al);
+            System.out.println();
+            i++;
+        }
+
+        try {
+            HSSFWorkbook hwb = new HSSFWorkbook();
+            HSSFSheet sheet = hwb.createSheet("new sheet");
+            for (int k = 0; k < arList.size(); k++) {
+                ArrayList ardata = (ArrayList) arList.get(k);
+                HSSFRow row = sheet.createRow((short) 0 + k);
+                for (int p = 0; p < ardata.size(); p++) {
+                    HSSFCell cell = row.createCell((short) p);
+                    String data = ardata.get(p).toString();
+                    if (data.startsWith("=")) {
+                        cell.setCellType(Cell.CELL_TYPE_STRING);
+                        data = data.replaceAll("\"", "");
+                        data = data.replaceAll("=", "");
+                        cell.setCellValue(data);
+                    } else if (data.startsWith("\"")) {
+                        data = data.replaceAll("\"", "");
+                        cell.setCellType(Cell.CELL_TYPE_STRING);
+                        cell.setCellValue(data);
+                    } else {
+                        data = data.replaceAll("\"", "");
+                        cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                        cell.setCellValue(data);
+                    }
+                    //*/
+                    //   cell.setCellValue(ardata.get(p).toString());
+                }
+                System.out.println();
+            }
+
+
+            String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
+                    new Date().toString().replaceAll("[ :]", "_"),
+                   file.getName());
+            FileOutputStream fileOut = new FileOutputStream(newFilePath);
+            hwb.write(fileOut);
+            fileOut.close();
+            System.out.println("Your excel file has been generated");
+            myInput.close();
+
+            return newFilePath;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } //main method ends
+
+        throw new RuntimeException(" no gen possible!");
+    }
+
+    private void createOutputFolder() {
+        XLSUtil.verifyAndCreateFolder(Constants.OUTPUT_PATH);
+        XLSUtil.verifyAndCreateFolder(Constants.TEMP_FOLDER);
+    }
+
+}

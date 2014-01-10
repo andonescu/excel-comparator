@@ -6,6 +6,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import ro.andonescu.excelcomparator.util.Constants;
+import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
 import java.util.Date;
@@ -45,6 +46,10 @@ public class Comparator {
             firstWorkbook = new HSSFWorkbook(fs);
             HSSFSheet sheet = firstWorkbook.getSheetAt(0);
             Iterator rows = sheet.rowIterator();
+
+            if (!XLSUtil.isXLSFile(fileTwo)) {
+                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo);
+            }
             InputStream input2 = new BufferedInputStream(
                     new FileInputStream(fileTwo));
             POIFSFileSystem fs2 = new POIFSFileSystem(input2);
@@ -85,6 +90,7 @@ public class Comparator {
 
 
             }
+
 
 
         } catch (Exception ex) {
