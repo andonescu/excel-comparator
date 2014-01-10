@@ -1,7 +1,7 @@
 package ro.andonescu.excelcomparator;
 
+import org.apache.commons.math.util.MathUtils;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
@@ -9,6 +9,7 @@ import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -29,19 +30,11 @@ public class Comparator {
         this.fileTwo = fileTwo;
     }
 
-    public HSSFCell getNextCell(HSSFRow row) {
-        Iterator cells = row.cellIterator();
-        return (HSSFCell) cells.next();
-
-    }
-
     public void compare() {
         try {
 
 
-
-            InputStream input = new BufferedInputStream(
-                    new FileInputStream(fileOne));
+            InputStream input = new BufferedInputStream(new FileInputStream(fileOne));
             POIFSFileSystem fs = new POIFSFileSystem(input);
             firstWorkbook = new HSSFWorkbook(fs);
             HSSFSheet sheet = firstWorkbook.getSheetAt(0);
@@ -66,7 +59,7 @@ public class Comparator {
             cs1.setFont(f);
 
             while (rows.hasNext()) {
-                boolean flag = false;
+
                 //iterating each row in the first excel
                 verificationRow++;
                 HSSFRow row = (HSSFRow) rows.next();
@@ -85,13 +78,12 @@ public class Comparator {
                     if (!result.isEmpty()) {
                         // so we have an error here - log this error in the output file
                         log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, verificationColumn, result));
-                       cellOne.setCellStyle(cs1);
+                        cellOne.setCellStyle(cs1);
                     }
                 }
 
 
             }
-
 
 
         } catch (Exception ex) {
@@ -134,49 +126,25 @@ public class Comparator {
         if (a == null && b == null) {
             return "";
         }
-        if (a != null && b == null || a== null && b != null ) {
+        if (a != null && b == null || a == null && b != null) {
 //                || a.getCellType() != b.getCellType()) {
             return " different cell types - please check ";
         }
-       String valueA = "";
+        String valueA;
+        boolean isTrue;
         switch ((a.getCellType())) {
             case HSSFCell.CELL_TYPE_NUMERIC:
-                valueA = new Double(a.getNumericCellValue()).toString();
-        break;
-            default :
-                valueA = a.getStringCellValue();
+                if (!XLSUtil.isNumeric(b.getStringCellValue()) || !new Float(a.getNumericCellValue()).equals(new Float(b.getStringCellValue()))) {
+                    sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getStringCellValue());
+                }
+
+                break;
+            default:
+                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
+                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
+                }
         }
 
-        if (!valueA.trim().equals(b.getStringCellValue().trim())) {
-            sb.append(" different values " + valueA + " ::: " + b.getStringCellValue());
-        }
-
-//        switch ((a.getCellType())) {
-//            case HSSFCell.CELL_TYPE_NUMERIC:
-//                if (a.getNumericCellValue() != b.getNumericCellValue()) {
-//                    sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getNumericCellValue());
-//                }
-//                break;
-//            case HSSFCell.CELL_TYPE_STRING:
-//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-//                }
-//                break;
-//            case HSSFCell.CELL_TYPE_BLANK:
-//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-//                }
-//                break;
-//            case HSSFCell.CELL_TYPE_BOOLEAN:
-//                if (a.getBooleanCellValue() != b.getBooleanCellValue()) {
-//                    sb.append(" different values " + a.getBooleanCellValue() + " ::: " + b.getBooleanCellValue());
-//                }
-//                break;
-//            default:
-//                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
-//                    sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
-//                }
-//        }
 
         return sb.toString();
     }
