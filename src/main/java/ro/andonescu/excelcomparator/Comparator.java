@@ -10,6 +10,7 @@ import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -50,13 +51,18 @@ public class Comparator {
             HSSFSheet sheet2 = wb2.getSheetAt(0);
 
 
-            HSSFCellStyle cs1 = firstWorkbook.createCellStyle();
-            cs1.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
-            cs1.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            HSSFCellStyle textStyle = firstWorkbook.createCellStyle();
+            textStyle.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
+            textStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
 
             HSSFFont f = firstWorkbook.createFont();
             f.setColor(IndexedColors.RED.getIndex());
-            cs1.setFont(f);
+            textStyle.setFont(f);
+
+            HSSFCellStyle dateStyle = firstWorkbook.createCellStyle();
+            dateStyle.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
+            dateStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            dateStyle.setFont(f);
 
 
             while (rows.hasNext()) {
@@ -78,7 +84,12 @@ public class Comparator {
                         if (cellOne == null) {
                             cellOne = row.createCell(j);
                         }
-                        cellOne.setCellStyle(cs1);
+                        if (cellOne.getCellStyle() != null && cellOne.getCellStyle().getDataFormatString() != null) {
+                            dateStyle.setDataFormat(cellOne.getCellStyle().getDataFormat());
+                            cellOne.setCellStyle(dateStyle);
+                        } else {
+                            cellOne.setCellStyle(textStyle);
+                        }
                     }
                 }
 
@@ -120,7 +131,7 @@ public class Comparator {
         out.close();
     }
 
-    private String compareCells(HSSFCell a, HSSFCell b) {
+    private String compareCells(HSSFCell a, HSSFCell b) throws ParseException {
         StringBuffer sb = new StringBuffer();
         if (isBlank(a) && isBlank(b)) {
             return sb.toString();
@@ -131,7 +142,15 @@ public class Comparator {
 
         switch ((a.getCellType())) {
             case HSSFCell.CELL_TYPE_NUMERIC:
-                if (!XLSUtil.isNumeric(b.getStringCellValue()) || !new Float(a.getNumericCellValue()).equals(new Float(b.getStringCellValue()))) {
+                if (HSSFDateUtil.isCellDateFormatted(a)) {
+                    Date aDate = a.getDateCellValue();
+                    Date bDate = XLSUtil.toDate(b.getStringCellValue());
+
+                    if (!aDate.equals(bDate)) {
+                        sb.append(" different values " + a.getDateCellValue() + " ::: " + b.getStringCellValue());
+                    }
+
+                } else if (!XLSUtil.isNumeric(b.getStringCellValue()) || !new Float(a.getNumericCellValue()).equals(new Float(b.getStringCellValue()))) {
                     sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getStringCellValue());
                 }
 
