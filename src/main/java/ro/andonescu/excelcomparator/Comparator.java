@@ -66,18 +66,19 @@ public class Comparator {
                 Iterator celIterator = row.cellIterator();
                 HSSFRow row2 = sheet2.getRow(verificationRow);
 
-                int verificationColumn = -1;
-                while (celIterator.hasNext()) {
-                    verificationColumn++;
-                    HSSFCell cellOne = (HSSFCell) celIterator.next();
+
+
+                for (int j = 0; j  < row.getLastCellNum(); j++) {
+                    HSSFCell cellOne = row.getCell(j);
                     // now we will compare the current cel with the one from the other file
-
-
-                    HSSFCell cellTwo = row2.getCell(verificationColumn);
+                    HSSFCell cellTwo = row2.getCell(j);
                     String result = compareCells(cellOne, cellTwo);
                     if (!result.isEmpty()) {
                         // so we have an error here - log this error in the output file
-                        log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, verificationColumn, result));
+                        log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
+                        if (cellOne == null) {
+                            cellOne = row.createCell(j);
+                        }
                         cellOne.setCellStyle(cs1);
                     }
                 }
