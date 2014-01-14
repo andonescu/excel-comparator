@@ -1,6 +1,7 @@
 package ro.andonescu.excelcomparator;
 
-import org.apache.commons.math.util.MathUtils;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -9,7 +10,6 @@ import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -58,17 +58,16 @@ public class Comparator {
             f.setColor(IndexedColors.RED.getIndex());
             cs1.setFont(f);
 
+
             while (rows.hasNext()) {
 
                 //iterating each row in the first excel
                 verificationRow++;
                 HSSFRow row = (HSSFRow) rows.next();
-                Iterator celIterator = row.cellIterator();
                 HSSFRow row2 = sheet2.getRow(verificationRow);
 
 
-
-                for (int j = 0; j  < row.getLastCellNum(); j++) {
+                for (int j = 0; j < row.getLastCellNum(); j++) {
                     HSSFCell cellOne = row.getCell(j);
                     // now we will compare the current cel with the one from the other file
                     HSSFCell cellTwo = row2.getCell(j);
@@ -123,16 +122,13 @@ public class Comparator {
 
     private String compareCells(HSSFCell a, HSSFCell b) {
         StringBuffer sb = new StringBuffer();
-
-        if (a == null && b == null) {
-            return "";
+        if (isBlank(a) && isBlank(b)) {
+            return sb.toString();
         }
         if (a != null && b == null || a == null && b != null) {
-//                || a.getCellType() != b.getCellType()) {
             return " different cell types - please check ";
         }
-        String valueA;
-        boolean isTrue;
+
         switch ((a.getCellType())) {
             case HSSFCell.CELL_TYPE_NUMERIC:
                 if (!XLSUtil.isNumeric(b.getStringCellValue()) || !new Float(a.getNumericCellValue()).equals(new Float(b.getStringCellValue()))) {
@@ -148,5 +144,17 @@ public class Comparator {
 
 
         return sb.toString();
+    }
+
+    private boolean isBlank(HSSFCell cell) {
+        if (cell == null) {
+            return true;
+        }
+        switch ((cell.getCellType())) {
+            case HSSFCell.CELL_TYPE_NUMERIC:
+                return false;
+            default:
+                return StringUtils.isBlank(cell.getStringCellValue());
+        }
     }
 }
