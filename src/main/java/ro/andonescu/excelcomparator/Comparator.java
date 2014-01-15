@@ -52,11 +52,12 @@ public class Comparator {
 
 
             HSSFCellStyle textStyle = firstWorkbook.createCellStyle();
-            textStyle.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
+            textStyle.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
             textStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
 
             HSSFFont f = firstWorkbook.createFont();
             f.setColor(IndexedColors.RED.getIndex());
+            f.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             textStyle.setFont(f);
 
             HSSFCellStyle dateStyle = firstWorkbook.createCellStyle();
