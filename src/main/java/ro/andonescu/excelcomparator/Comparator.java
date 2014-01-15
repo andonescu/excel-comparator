@@ -51,17 +51,12 @@ public class Comparator {
             HSSFSheet sheet2 = wb2.getSheetAt(0);
 
 
-            HSSFCellStyle textStyle = firstWorkbook.createCellStyle();
-//            textStyle.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
-//            textStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-
-            HSSFFont f = firstWorkbook.createFont();
-            f.setColor(IndexedColors.RED.getIndex());
-            f.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-            textStyle.setFont(f);
-
+            HSSFCellStyle textStyle = null;
             HSSFCellStyle dateStyle = null;
 
+            HSSFFont blueFont = firstWorkbook.createFont();
+            blueFont.setColor(IndexedColors.RED.getIndex());
+            blueFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
 
             while (rows.hasNext()) {
 
@@ -94,9 +89,7 @@ public class Comparator {
                                 dateStyle = firstWorkbook.createCellStyle();
                                 dateStyle.cloneStyleFrom(cellOne.getCellStyle());
 
-                                HSSFFont blueFont = firstWorkbook.createFont();
-                                blueFont.setColor(IndexedColors.RED.getIndex());
-                                blueFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+
 
                                 dateStyle.setFont(blueFont);
                             }
@@ -105,6 +98,12 @@ public class Comparator {
                             hasTextStyle = false;
                         }
                         if (hasTextStyle) {
+
+                            if (textStyle == null) {
+                                textStyle = firstWorkbook.createCellStyle();
+                                textStyle.cloneStyleFrom(cellOne.getCellStyle());
+                                textStyle.setFont(blueFont);
+                            }
                             cellOne.setCellStyle(textStyle);
                         }
                     }
