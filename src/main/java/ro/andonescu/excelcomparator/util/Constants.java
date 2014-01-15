@@ -15,8 +15,8 @@ public class Constants {
     }
 
 
-    public static void update(){
+    public static void update() {
         TEMP_FOLDER = OUTPUT_PATH + "/temp";
-        OUTPUT_PATH_LOG  = TEMP_FOLDER + "/log";
+        OUTPUT_PATH_LOG = TEMP_FOLDER + "/log";
     }
 }

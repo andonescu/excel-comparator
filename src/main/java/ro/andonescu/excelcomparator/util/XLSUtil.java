@@ -41,18 +41,14 @@ public class XLSUtil {
         }
     }
 
-    public static boolean isNumeric(String s) {
-        return s.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)");
-    }
-
-    public static Date toDate(String date){
+    public static Date toDate(String date) {
         String[] dateFormats = {"dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy HH:mm"};
         Date finalDate = null;
-        for(String format : dateFormats) {
+        for (String format : dateFormats) {
             try {
                 finalDate = getDateByFormat(date.trim(), format);
             } catch (ParseException e) {
-               // this format is not ok
+                // this format is not ok
                 //TODO: modify this to use regex
 //                e.printStackTrace();
             }

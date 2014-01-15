@@ -14,94 +14,112 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
-    public String transformer(String fName, HSSFSheet compareSheet) throws IOException {
+    /**
+     * Transforms the given file, in to a xls one, based on another
+     *
+     * @param filePathToBeTransformed
+     * @param compareSheet
+     * @return
+     * @throws IOException
+     */
+    public String transformer(String filePathToBeTransformed, HSSFSheet compareSheet) throws IOException {
 
         createOutputFolder();
 
         ArrayList arList = null;
         ArrayList al = null;
         String thisLine;
-        int count = 0;
-        File file = new File(fName);
+        File file = new File(filePathToBeTransformed);
         FileInputStream fis = new FileInputStream(file);
         DataInputStream myInput = new DataInputStream(fis);
 
-        int i = 0;
         arList = new ArrayList();
         while ((thisLine = myInput.readLine()) != null) {
             al = new ArrayList();
-            String strar[] = thisLine.split("\t");
-            for (int j = 0; j < strar.length; j++) {
-                al.add(strar[j]);
+            String data[] = thisLine.split("\t");
+            for (int j = 0; j < data.length; j++) {
+                al.add(data[j]);
             }
             arList.add(al);
-            i++;
         }
 
         try {
             HSSFWorkbook hwb = new HSSFWorkbook();
-            HSSFSheet sheet = hwb.createSheet("new sheet");
-            HSSFCellStyle style = hwb.createCellStyle();
+            HSSFSheet sheet = hwb.createSheet(compareSheet.getSheetName());
 
+            for (int i = 0; i < arList.size(); i++) {
+                ArrayList rowDataList = (ArrayList) arList.get(i);
+                HSSFRow row = sheet.createRow((short) 0 + i);
+                for (int j = 0; j < rowDataList.size(); j++) {
 
-            for (int k = 0; k < arList.size(); k++) {
-                ArrayList rowDataList = (ArrayList) arList.get(k);
-                HSSFRow row = sheet.createRow((short) 0 + k);
-                for (int p = 0; p < rowDataList.size(); p++) {
-                    HSSFCell cell = row.createCell(p);
-                    String columnData = rowDataList.get(p).toString().trim();
-                    if (columnData.startsWith("\"")) {
-                        columnData = columnData.substring(1, columnData.length() - 1);
-                    }
-                    if (columnData.endsWith("\"")) {
-                        columnData = columnData.substring(0, columnData.length() - 2);
-                    }
-                    columnData = columnData.replaceAll("\"\"", "\"");
+                    HSSFCell cell = row.createCell(j);
+                    String columnData = cleanData(rowDataList, j);
+                    HSSFCell compareCell = compareSheet.getRow(i).getCell(j);
 
-                    HSSFCell compareCell = compareSheet.getRow(k).getCell(p);
-                    if (compareCell != null) {
-                        cell.setCellType(compareCell.getCellType());
+                    storeDataToCell(cell, columnData, compareCell);
 
-                        switch ((compareCell.getCellType())) {
-                            case HSSFCell.CELL_TYPE_NUMERIC:
-
-                                if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
-                                    Date bDate = XLSUtil.toDate(columnData);
-                                    cell.setCellValue(bDate);
-                                } else {
-                                    cell.setCellValue(new Double(columnData));
-                                }
-                                break;
-                            default:
-                                cell.setCellValue(columnData);
-                                break;
-                        }
-
-                        }else{
-                            cell.setCellType(Cell.CELL_TYPE_STRING);
-                            cell.setCellValue(columnData);
-                        }
-
-                    }
                 }
+            }
 
 
-                String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
-                        new Date().toString().replaceAll("[ :]", "_"),
-                        file.getName());
-                FileOutputStream fileOut = new FileOutputStream(newFilePath);
-                hwb.write(fileOut);
-                fileOut.close();
-                System.out.println("Your excel file has been generated");
-                myInput.close();
+            return writeTheOutput(file, myInput, hwb);
 
-                return newFilePath;
-            }catch(Exception ex){
-                ex.printStackTrace();
-            } //main method ends
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } //main method ends
 
-            throw new RuntimeException(" no gen possible!");
+        throw new RuntimeException(" no gen possible!");
+    }
+
+    private String writeTheOutput(File file, DataInputStream myInput, HSSFWorkbook hwb) throws IOException {
+        String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
+                file.getName(), new Date().toString().replaceAll("[ :]", "_")
+        );
+
+        FileOutputStream fileOut = new FileOutputStream(newFilePath);
+        hwb.write(fileOut);
+        fileOut.close();
+        System.out.println("Your excel file has been generated");
+        myInput.close();
+        return newFilePath;
+    }
+
+    private void storeDataToCell(HSSFCell cell, String columnData, HSSFCell compareCell) {
+        if (compareCell != null) {
+            cell.setCellType(compareCell.getCellType());
+
+            switch ((compareCell.getCellType())) {
+                case HSSFCell.CELL_TYPE_NUMERIC:
+
+                    if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
+                        Date bDate = XLSUtil.toDate(columnData);
+                        cell.setCellValue(bDate);
+                    } else {
+                        cell.setCellValue(new Double(columnData));
+                    }
+                    break;
+                default:
+                    cell.setCellValue(columnData);
+                    break;
+            }
+
+        } else {
+            cell.setCellType(Cell.CELL_TYPE_STRING);
+            cell.setCellValue(columnData);
         }
+    }
+
+    private String cleanData(ArrayList rowDataList, int j) {
+        String columnData = rowDataList.get(j).toString().trim();
+        if (columnData.startsWith("\"")) {
+            columnData = columnData.substring(1, columnData.length() - 1);
+        }
+        if (columnData.endsWith("\"")) {
+            columnData = columnData.substring(0, columnData.length() - 2);
+        }
+        columnData = columnData.replaceAll("\"\"", "\"");
+        return columnData;
+    }
 
     private void createOutputFolder() {
         XLSUtil.verifyAndCreateFolder(Constants.OUTPUT_PATH);

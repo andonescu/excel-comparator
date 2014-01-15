@@ -17,101 +17,36 @@ import java.util.Iterator;
  * Created by iandonescu on 1/9/14.
  */
 public class Comparator {
-    private String fileOne;
-    private String fileTwo;
+    private String expectedFile;
+    private String actualFile;
     private StringBuffer log = new StringBuffer();
-    private HSSFWorkbook firstWorkbook;
+    private HSSFWorkbook expectedWorkbook;
     private Date compareDate = new Date();
 
     private int verificationRow = -1;
 
-    public Comparator(String fileOne, String fileTwo) {
-        this.fileOne = fileOne;
-        this.fileTwo = fileTwo;
+    public Comparator(String expectedFilePath, String actualFilePath) {
+        this.expectedFile = expectedFilePath;
+        this.actualFile = actualFilePath;
     }
 
-    private HSSFWorkbook wb2;
-
+    /**
+     * Compare the files
+     */
     public void compare() {
         try {
 
 
-            InputStream input = new BufferedInputStream(new FileInputStream(fileOne));
-            POIFSFileSystem fs = new POIFSFileSystem(input);
-            firstWorkbook = new HSSFWorkbook(fs);
-            HSSFSheet sheet = firstWorkbook.getSheetAt(0);
-            Iterator rows = sheet.rowIterator();
+            HSSFSheet expectedSheet = getExpectedWorkbookFirstSheet(expectedFile);
+            Iterator rows = expectedSheet.rowIterator();
 
-            if (!XLSUtil.isXLSFile(fileTwo)) {
-                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo, sheet);
-            }
-            InputStream input2 = new BufferedInputStream(
-                    new FileInputStream(fileTwo));
-            POIFSFileSystem fs2 = new POIFSFileSystem(input2);
-            HSSFWorkbook wb2 = new HSSFWorkbook(fs2);
-            HSSFSheet sheet2 = wb2.getSheetAt(0);
-
-
-            HSSFCellStyle textStyle = null;
-            HSSFCellStyle dateStyle = null;
-
-            HSSFFont blueFont = firstWorkbook.createFont();
-            blueFont.setColor(IndexedColors.RED.getIndex());
-            blueFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-
-            while (rows.hasNext()) {
-
-                //iterating each row in the first excel
-                verificationRow++;
-                HSSFRow row = (HSSFRow) rows.next();
-                HSSFRow row2 = sheet2.getRow(verificationRow);
-
-
-                for (int j = 0; j < row.getLastCellNum(); j++) {
-                    // now we will compare the current cel with the one from the other file
-                    HSSFCell cellOne = row.getCell(j);
-                    HSSFCell cellTwo = row2.getCell(j);
-
-                    String result = verifyCellsValues(cellOne, cellTwo);
-
-                    if (!result.isEmpty()) {
-                        // so we have an error here - log this error in the output file
-                        log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
-                        boolean hasTextStyle = true;
-                        if (cellOne == null) {
-                            cellOne = row.createCell(j);
-
-                        }
-                        if (cellOne.getCellStyle() != null
-                                && cellOne.getCellStyle().getDataFormatString() != null && cellOne.getCellType() == HSSFCell.CELL_TYPE_NUMERIC
-                                && HSSFDateUtil.isCellDateFormatted(cellOne)) {
-
-                            if (dateStyle == null) {
-                                dateStyle = firstWorkbook.createCellStyle();
-                                dateStyle.cloneStyleFrom(cellOne.getCellStyle());
-
-
-                                dateStyle.setFont(blueFont);
-                            }
-
-                            cellOne.setCellStyle(dateStyle);
-                            hasTextStyle = false;
-                        }
-                        if (hasTextStyle) {
-
-                            if (textStyle == null) {
-                                textStyle = firstWorkbook.createCellStyle();
-                                textStyle.cloneStyleFrom(cellOne.getCellStyle());
-                                textStyle.setFont(blueFont);
-                            }
-                            cellOne.setCellStyle(textStyle);
-                        }
-                    }
-                }
-
-
+            if (!XLSUtil.isXLSFile(actualFile)) {
+                actualFile = new CSVtoXlsTransformer().transformer(actualFile, expectedSheet);
             }
 
+            HSSFSheet actualSheet = getActualWorkbookFirstSheet(actualFile);
+
+            doActualComparasion(rows, actualSheet);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -119,15 +54,103 @@ public class Comparator {
 
     }
 
+    private HSSFSheet getExpectedWorkbookFirstSheet(String file) throws IOException {
+        expectedWorkbook = getWorkbook(file);
+        return expectedWorkbook.getSheetAt(0);
+    }
+
+    private HSSFWorkbook getWorkbook(String file) throws IOException {
+        InputStream input = new BufferedInputStream(new FileInputStream(file));
+        POIFSFileSystem fs = new POIFSFileSystem(input);
+        return new HSSFWorkbook(fs);
+    }
+
+    private HSSFSheet getActualWorkbookFirstSheet(String file) throws IOException {
+        HSSFWorkbook actualWorkbook = getWorkbook(file);
+        return actualWorkbook.getSheetAt(0);
+    }
+
+    private void doActualComparasion(Iterator rows, HSSFSheet sheet2) throws ParseException {
+        HSSFCellStyle textStyle = null;
+        HSSFCellStyle dateStyle = null;
+
+        HSSFFont redFont = getRedFont();
+
+        while (rows.hasNext()) {
+
+            //iterating each row in the first excel
+            verificationRow++;
+            HSSFRow row = (HSSFRow) rows.next();
+            HSSFRow row2 = sheet2.getRow(verificationRow);
+
+
+            for (int j = 0; j < row.getLastCellNum(); j++) {
+                // now we will compare the current cel with the one from the other file
+                HSSFCell cellOne = row.getCell(j);
+                HSSFCell cellTwo = row2.getCell(j);
+
+                String result = verifyCellsValues(cellOne, cellTwo);
+
+                if (!result.isEmpty()) {
+                    // so we have an error here - log this error in the output file
+                    log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
+                    boolean hasTextStyle = true;
+                    if (cellOne == null) {
+                        cellOne = row.createCell(j);
+                    }
+
+                    if (cellOne.getCellStyle() != null
+                            && cellOne.getCellStyle().getDataFormatString() != null
+                            && cellOne.getCellType() == HSSFCell.CELL_TYPE_NUMERIC
+                            && HSSFDateUtil.isCellDateFormatted(cellOne)) {
+
+                        dateStyle = updateStyleIfNeeded(dateStyle, redFont, cellOne);
+                        cellOne.setCellStyle(dateStyle);
+                        hasTextStyle = false;
+                    }
+
+                    if (hasTextStyle) {
+                        textStyle = updateStyleIfNeeded(textStyle, redFont, cellOne);
+                        cellOne.setCellStyle(textStyle);
+                    }
+                }
+            }
+
+
+        }
+    }
+
+    private HSSFCellStyle updateStyleIfNeeded(HSSFCellStyle dateStyle, HSSFFont redFont, HSSFCell cellOne) {
+        if (dateStyle == null) {
+            dateStyle = updateStyle(redFont, cellOne);
+        }
+        return dateStyle;
+    }
+
+    private HSSFCellStyle updateStyle(HSSFFont redFont, HSSFCell cell) {
+        HSSFCellStyle textStyle;
+        textStyle = expectedWorkbook.createCellStyle();
+        textStyle.cloneStyleFrom(cell.getCellStyle());
+        textStyle.setFont(redFont);
+        return textStyle;
+    }
+
+    private HSSFFont getRedFont() {
+        HSSFFont redFont = expectedWorkbook.createFont();
+        redFont.setColor(IndexedColors.RED.getIndex());
+        redFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        return redFont;
+    }
+
     public void writeOutputXls() throws IOException {
-        if (firstWorkbook == null) {
+        if (expectedWorkbook == null) {
             throw new RuntimeException("no workbook processed!");
         }
 
         verifyFolder(Constants.OUTPUT_PATH);
         // Write the output to a file
         FileOutputStream fileOut = new FileOutputStream(Constants.OUTPUT_PATH + String.format("/A_B_%s.xls", compareDate.toString().replaceAll("[: ]", "_")));
-        firstWorkbook.write(fileOut);
+        expectedWorkbook.write(fileOut);
         fileOut.close();
     }
 

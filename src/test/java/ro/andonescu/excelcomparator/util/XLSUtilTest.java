@@ -2,7 +2,6 @@ package ro.andonescu.excelcomparator.util;
 
 
 import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Created by iandonescu on 1/10/14.
@@ -27,15 +26,4 @@ public class XLSUtilTest {
     public void testIsXLSFile_isNotOK() throws Exception {
         Assert.assertEquals(false, XLSUtil.isXLSFile("test.csv"));
     }
-
-
-    @org.junit.Test
-    public void testIsNumber() throws Exception {
-        Assert.assertEquals(true,XLSUtil.isNumeric("33"));
-        Assert.assertEquals(true, XLSUtil.isNumeric("22.43"));
-        Assert.assertEquals(true, XLSUtil.isNumeric("123123"));
-
-        Assert.assertEquals(false, XLSUtil.isNumeric("test.csv"));
-    }
-
 }
