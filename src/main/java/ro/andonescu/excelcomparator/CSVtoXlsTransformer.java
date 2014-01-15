@@ -1,7 +1,6 @@
 package ro.andonescu.excelcomparator;
 
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
@@ -51,9 +50,14 @@ public class CSVtoXlsTransformer {
                 HSSFRow row = sheet.createRow((short) 0 + k);
                 for (int p = 0; p < rowDataList.size(); p++) {
                     HSSFCell cell = row.createCell(p);
-                    String columnData = rowDataList.get(p).toString().trim().replace("\"","");
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
-                        cell.setCellValue(columnData);
+                    String columnData = rowDataList.get(p).toString().trim();
+                    if (columnData.startsWith("\"")) {
+                       columnData = columnData.substring(1, columnData.length() - 2);
+                    }
+                    columnData = columnData.replaceAll("\"\"","\"");
+
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                    cell.setCellValue(columnData);
                 }
                 System.out.println();
             }
@@ -61,7 +65,7 @@ public class CSVtoXlsTransformer {
 
             String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
                     new Date().toString().replaceAll("[ :]", "_"),
-                   file.getName());
+                    file.getName());
             FileOutputStream fileOut = new FileOutputStream(newFilePath);
             hwb.write(fileOut);
             fileOut.close();
