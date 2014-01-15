@@ -46,7 +46,7 @@ public class XLSUtil {
     }
 
     public static Date toDate(String date){
-        String[] dateFormats = {"MM/dd/yyyy HH:mm:ss", "MM/dd/yyyy HH:mm"};
+        String[] dateFormats = {"dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy HH:mm"};
         Date finalDate = null;
         for(String format : dateFormats) {
             try {
