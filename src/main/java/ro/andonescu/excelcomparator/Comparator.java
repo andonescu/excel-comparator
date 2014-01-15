@@ -52,18 +52,15 @@ public class Comparator {
 
 
             HSSFCellStyle textStyle = firstWorkbook.createCellStyle();
-            textStyle.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
-            textStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+//            textStyle.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
+//            textStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
 
             HSSFFont f = firstWorkbook.createFont();
             f.setColor(IndexedColors.RED.getIndex());
             f.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             textStyle.setFont(f);
 
-            HSSFCellStyle dateStyle = firstWorkbook.createCellStyle();
-            dateStyle.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
-            dateStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-            dateStyle.setFont(f);
+            HSSFCellStyle dateStyle = null;
 
 
             while (rows.hasNext()) {
@@ -75,20 +72,39 @@ public class Comparator {
 
 
                 for (int j = 0; j < row.getLastCellNum(); j++) {
-                    HSSFCell cellOne = row.getCell(j);
                     // now we will compare the current cel with the one from the other file
+                    HSSFCell cellOne = row.getCell(j);
                     HSSFCell cellTwo = row2.getCell(j);
-                    String result = compareCells(cellOne, cellTwo);
+
+                    String result = verifyCellsValues(cellOne, cellTwo);
+
                     if (!result.isEmpty()) {
                         // so we have an error here - log this error in the output file
                         log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
+                        boolean hasTextStyle = true;
                         if (cellOne == null) {
                             cellOne = row.createCell(j);
+
                         }
-                        if (cellOne.getCellStyle() != null && cellOne.getCellStyle().getDataFormatString() != null) {
-                            dateStyle.setDataFormat(cellOne.getCellStyle().getDataFormat());
+                        if (cellOne.getCellStyle() != null
+                                && cellOne.getCellStyle().getDataFormatString() != null && cellOne.getCellType() == HSSFCell.CELL_TYPE_NUMERIC
+                                && HSSFDateUtil.isCellDateFormatted(cellOne)) {
+
+                            if (dateStyle == null) {
+                                dateStyle = firstWorkbook.createCellStyle();
+                                dateStyle.cloneStyleFrom(cellOne.getCellStyle());
+
+                                HSSFFont blueFont = firstWorkbook.createFont();
+                                blueFont.setColor(IndexedColors.RED.getIndex());
+                                blueFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+
+                                dateStyle.setFont(blueFont);
+                            }
+
                             cellOne.setCellStyle(dateStyle);
-                        } else {
+                            hasTextStyle = false;
+                        }
+                        if (hasTextStyle) {
                             cellOne.setCellStyle(textStyle);
                         }
                     }
@@ -132,7 +148,7 @@ public class Comparator {
         out.close();
     }
 
-    private String compareCells(HSSFCell a, HSSFCell b) throws ParseException {
+    private String verifyCellsValues(HSSFCell a, HSSFCell b) throws ParseException {
         StringBuffer sb = new StringBuffer();
         if (isBlank(a) && isBlank(b)) {
             return sb.toString();

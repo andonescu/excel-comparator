@@ -52,7 +52,10 @@ public class CSVtoXlsTransformer {
                     HSSFCell cell = row.createCell(p);
                     String columnData = rowDataList.get(p).toString().trim();
                     if (columnData.startsWith("\"")) {
-                       columnData = columnData.substring(1, columnData.length() - 2);
+                       columnData = columnData.substring(1, columnData.length() - 1);
+                    }
+                    if (columnData.endsWith("\"")) {
+                        columnData = columnData.substring(0, columnData.length() - 2);
                     }
                     columnData = columnData.replaceAll("\"\"","\"");
 
