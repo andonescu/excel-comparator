@@ -14,7 +14,7 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
-    public String transformer(String fName) throws IOException {
+    public String transformer(String fName, HSSFSheet compareSheet) throws IOException {
 
         createOutputFolder();
 
@@ -35,7 +35,6 @@ public class CSVtoXlsTransformer {
                 al.add(strar[j]);
             }
             arList.add(al);
-            System.out.println();
             i++;
         }
 
@@ -52,36 +51,57 @@ public class CSVtoXlsTransformer {
                     HSSFCell cell = row.createCell(p);
                     String columnData = rowDataList.get(p).toString().trim();
                     if (columnData.startsWith("\"")) {
-                       columnData = columnData.substring(1, columnData.length() - 1);
+                        columnData = columnData.substring(1, columnData.length() - 1);
                     }
                     if (columnData.endsWith("\"")) {
                         columnData = columnData.substring(0, columnData.length() - 2);
                     }
-                    columnData = columnData.replaceAll("\"\"","\"");
+                    columnData = columnData.replaceAll("\"\"", "\"");
 
-                    cell.setCellType(Cell.CELL_TYPE_STRING);
-                    cell.setCellValue(columnData);
+                    HSSFCell compareCell = compareSheet.getRow(k).getCell(p);
+                    if (compareCell != null) {
+                        cell.setCellType(compareCell.getCellType());
+
+                        switch ((compareCell.getCellType())) {
+                            case HSSFCell.CELL_TYPE_NUMERIC:
+
+                                if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
+                                    Date bDate = XLSUtil.toDate(columnData);
+                                    cell.setCellValue(bDate);
+                                } else {
+                                    cell.setCellValue(new Double(columnData));
+                                }
+                                break;
+                            default:
+                                cell.setCellValue(columnData);
+                                break;
+                        }
+
+                        }else{
+                            cell.setCellType(Cell.CELL_TYPE_STRING);
+                            cell.setCellValue(columnData);
+                        }
+
+                    }
                 }
-                System.out.println();
-            }
 
 
-            String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
-                    new Date().toString().replaceAll("[ :]", "_"),
-                    file.getName());
-            FileOutputStream fileOut = new FileOutputStream(newFilePath);
-            hwb.write(fileOut);
-            fileOut.close();
-            System.out.println("Your excel file has been generated");
-            myInput.close();
+                String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
+                        new Date().toString().replaceAll("[ :]", "_"),
+                        file.getName());
+                FileOutputStream fileOut = new FileOutputStream(newFilePath);
+                hwb.write(fileOut);
+                fileOut.close();
+                System.out.println("Your excel file has been generated");
+                myInput.close();
 
-            return newFilePath;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } //main method ends
+                return newFilePath;
+            }catch(Exception ex){
+                ex.printStackTrace();
+            } //main method ends
 
-        throw new RuntimeException(" no gen possible!");
-    }
+            throw new RuntimeException(" no gen possible!");
+        }
 
     private void createOutputFolder() {
         XLSUtil.verifyAndCreateFolder(Constants.OUTPUT_PATH);

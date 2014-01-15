@@ -4,7 +4,6 @@ package ro.andonescu.excelcomparator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
@@ -31,6 +30,8 @@ public class Comparator {
         this.fileTwo = fileTwo;
     }
 
+    private HSSFWorkbook wb2;
+
     public void compare() {
         try {
 
@@ -42,7 +43,7 @@ public class Comparator {
             Iterator rows = sheet.rowIterator();
 
             if (!XLSUtil.isXLSFile(fileTwo)) {
-                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo);
+                fileTwo = new CSVtoXlsTransformer().transformer(fileTwo, sheet);
             }
             InputStream input2 = new BufferedInputStream(
                     new FileInputStream(fileTwo));
@@ -88,7 +89,6 @@ public class Comparator {
                             if (dateStyle == null) {
                                 dateStyle = firstWorkbook.createCellStyle();
                                 dateStyle.cloneStyleFrom(cellOne.getCellStyle());
-
 
 
                                 dateStyle.setFont(blueFont);
@@ -155,19 +155,23 @@ public class Comparator {
         if (a != null && b == null || a == null && b != null) {
             return " different cell types - please check ";
         }
-
+//
         switch ((a.getCellType())) {
             case HSSFCell.CELL_TYPE_NUMERIC:
+
                 if (HSSFDateUtil.isCellDateFormatted(a)) {
                     Date aDate = a.getDateCellValue();
-                    Date bDate = XLSUtil.toDate(b.getStringCellValue());
+                    Date bDate = b.getDateCellValue();
 
                     if (!aDate.equals(bDate)) {
-                        sb.append(" different values " + a.getDateCellValue() + " ::: " + b.getStringCellValue());
+                        sb.append(" different values " + a.getDateCellValue() + " ::: " + b.getDateCellValue());
                     }
 
-                } else if (!XLSUtil.isNumeric(b.getStringCellValue()) || !new Float(a.getNumericCellValue()).equals(new Float(b.getStringCellValue()))) {
-                    sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getStringCellValue());
+                } else {
+
+                    if (a.getNumericCellValue() != b.getNumericCellValue()) {
+                        sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getNumericCellValue());
+                    }
                 }
 
                 break;
