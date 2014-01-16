@@ -14,8 +14,8 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
-    private HSSFCellStyle normalStyle ;
-    private HSSFCellStyle dateStyle ;
+    private HSSFWorkbook hwb;
+
     /**
      * Transforms the given file, in to a xls one, based on another
      *
@@ -46,11 +46,9 @@ public class CSVtoXlsTransformer {
         }
 
         try {
-            HSSFWorkbook hwb = new HSSFWorkbook();
+            hwb = new HSSFWorkbook();
             HSSFSheet sheet = hwb.createSheet(compareSheet.getSheetName());
 
-            normalStyle = hwb.createCellStyle();
-            dateStyle = hwb.createCellStyle();
 
             for (int i = 0; i < arList.size(); i++) {
                 ArrayList rowDataList = (ArrayList) arList.get(i);
@@ -58,7 +56,6 @@ public class CSVtoXlsTransformer {
                 for (int j = 0; j < rowDataList.size(); j++) {
 
                     HSSFCell cell = row.createCell(j);
-                    cell.setCellStyle(normalStyle);
                     String columnData = cleanData(rowDataList, j);
                     HSSFCell compareCell = compareSheet.getRow(i).getCell(j);
 
@@ -97,15 +94,21 @@ public class CSVtoXlsTransformer {
         if (compareCell != null) {
             cell.setCellType(compareCell.getCellType());
 
+            HSSFCellStyle newStyle = hwb.createCellStyle();
+            newStyle.cloneStyleFrom(compareCell.getCellStyle());
+            cell.setCellStyle(newStyle);
+
             switch ((compareCell.getCellType())) {
                 case HSSFCell.CELL_TYPE_NUMERIC:
 
                     if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
                         Date bDate = XLSUtil.toDate(columnData);
                         cell.setCellValue(bDate);
-                        dateStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
-                        cell.setCellStyle(dateStyle);
+                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
+
                     } else {
+
+                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
                         cell.setCellValue(new Double(columnData));
                     }
                     break;
