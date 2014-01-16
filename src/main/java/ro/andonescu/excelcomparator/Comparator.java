@@ -9,6 +9,7 @@ import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Iterator;
@@ -194,14 +195,17 @@ public class Comparator {
 
                 } else {
 
-                    if (a.getNumericCellValue() != b.getNumericCellValue()) {
+                    BigDecimal aDecimal = BigDecimal.valueOf(a.getNumericCellValue());
+                    BigDecimal bDecimal = BigDecimal.valueOf(b.getNumericCellValue());
+
+                    if (!aDecimal.equals(bDecimal)) {
                         sb.append(" different values " + a.getNumericCellValue() + " ::: " + b.getNumericCellValue());
                     }
                 }
 
                 break;
             default:
-                if (!a.getStringCellValue().equals(b.getStringCellValue())) {
+                if (!a.getStringCellValue().trim().equals(b.getStringCellValue().trim())) {
                     sb.append(" different values " + a.getStringCellValue() + " ::: " + b.getStringCellValue());
                 }
         }

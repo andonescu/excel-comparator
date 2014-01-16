@@ -1,13 +1,17 @@
 package ro.andonescu.excelcomparator;
 
+import javafx.scene.control.TableColumn;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by iandonescu on 1/10/14.
@@ -15,6 +19,7 @@ import java.util.Date;
 public class CSVtoXlsTransformer {
 
     private HSSFWorkbook hwb;
+    private Map<Integer, HSSFCellStyle> styles = new HashMap<Integer, HSSFCellStyle>();
 
     /**
      * Transforms the given file, in to a xls one, based on another
@@ -94,17 +99,18 @@ public class CSVtoXlsTransformer {
         if (compareCell != null) {
             cell.setCellType(compareCell.getCellType());
 
-            HSSFCellStyle newStyle = hwb.createCellStyle();
-            newStyle.cloneStyleFrom(compareCell.getCellStyle());
+            HSSFCellStyle newStyle = getHssfCellStyle(compareCell);
             cell.setCellStyle(newStyle);
 
             switch ((compareCell.getCellType())) {
                 case HSSFCell.CELL_TYPE_NUMERIC:
 
                     if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
+                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
+
                         Date bDate = XLSUtil.toDate(columnData);
                         cell.setCellValue(bDate);
-                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
+
 
                     } else {
 
@@ -121,6 +127,17 @@ public class CSVtoXlsTransformer {
             cell.setCellType(Cell.CELL_TYPE_STRING);
             cell.setCellValue(columnData);
         }
+    }
+
+    private HSSFCellStyle getHssfCellStyle(HSSFCell compareCell) {
+        if(styles.containsKey(compareCell.getCellType())) {
+            return styles.get(compareCell.getCellType());
+        }
+
+        HSSFCellStyle newStyle = hwb.createCellStyle();
+        newStyle.cloneStyleFrom(compareCell.getCellStyle());
+        styles.put(new Integer(compareCell.getCellType()), newStyle);
+        return newStyle;
     }
 
     private String cleanData(ArrayList rowDataList, int j) {
