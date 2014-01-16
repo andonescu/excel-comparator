@@ -14,6 +14,8 @@ import java.util.Date;
  */
 public class CSVtoXlsTransformer {
 
+    private HSSFCellStyle normalStyle ;
+    private HSSFCellStyle dateStyle ;
     /**
      * Transforms the given file, in to a xls one, based on another
      *
@@ -47,12 +49,16 @@ public class CSVtoXlsTransformer {
             HSSFWorkbook hwb = new HSSFWorkbook();
             HSSFSheet sheet = hwb.createSheet(compareSheet.getSheetName());
 
+            normalStyle = hwb.createCellStyle();
+            dateStyle = hwb.createCellStyle();
+
             for (int i = 0; i < arList.size(); i++) {
                 ArrayList rowDataList = (ArrayList) arList.get(i);
                 HSSFRow row = sheet.createRow((short) 0 + i);
                 for (int j = 0; j < rowDataList.size(); j++) {
 
                     HSSFCell cell = row.createCell(j);
+                    cell.setCellStyle(normalStyle);
                     String columnData = cleanData(rowDataList, j);
                     HSSFCell compareCell = compareSheet.getRow(i).getCell(j);
 
@@ -72,7 +78,10 @@ public class CSVtoXlsTransformer {
     }
 
     private String writeTheOutput(File file, DataInputStream myInput, HSSFWorkbook hwb) throws IOException {
-        String newFilePath = String.format("%s/%s-%s.xls", Constants.TEMP_FOLDER,
+        File folder = new File(Constants.OUTPUT_PATH_COMPARED);
+        folder.mkdirs();
+
+        String newFilePath = String.format("%s/%s_%s.xls", Constants.OUTPUT_PATH_COMPARED,
                 file.getName(), new Date().toString().replaceAll("[ :]", "_")
         );
 
@@ -94,6 +103,8 @@ public class CSVtoXlsTransformer {
                     if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
                         Date bDate = XLSUtil.toDate(columnData);
                         cell.setCellValue(bDate);
+                        dateStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
+                        cell.setCellStyle(dateStyle);
                     } else {
                         cell.setCellValue(new Double(columnData));
                     }

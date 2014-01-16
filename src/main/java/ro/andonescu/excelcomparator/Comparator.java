@@ -28,6 +28,8 @@ public class Comparator {
     public Comparator(String expectedFilePath, String actualFilePath) {
         this.expectedFile = expectedFilePath;
         this.actualFile = actualFilePath;
+
+
     }
 
     /**
@@ -147,9 +149,9 @@ public class Comparator {
             throw new RuntimeException("no workbook processed!");
         }
 
-        verifyFolder(Constants.OUTPUT_PATH);
+        verifyFolder(Constants.OUTPUT_PATH_DIFF);
         // Write the output to a file
-        FileOutputStream fileOut = new FileOutputStream(Constants.OUTPUT_PATH + String.format("/A_B_%s.xls", compareDate.toString().replaceAll("[: ]", "_")));
+        FileOutputStream fileOut = new FileOutputStream(Constants.OUTPUT_PATH_DIFF + String.format("/%s-diff.xls", new File(actualFile).getName()));
         expectedWorkbook.write(fileOut);
         fileOut.close();
     }
@@ -164,7 +166,7 @@ public class Comparator {
     public void logFile() throws IOException {
         verifyFolder(Constants.OUTPUT_PATH_LOG);
 
-        BufferedWriter out = new BufferedWriter(new FileWriter(Constants.OUTPUT_PATH_LOG + String.format("/A_B_%s.txt", compareDate.toString().replaceAll("[: ]", "_"))));
+        BufferedWriter out = new BufferedWriter(new FileWriter(Constants.OUTPUT_PATH_LOG + String.format("/%s-log.txt", new File(actualFile).getName())));
         out.write(log.toString());
         out.flush();
         out.close();
