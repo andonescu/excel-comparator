@@ -17,7 +17,7 @@ import java.util.Map;
 public class CSVtoXlsTransformer {
 
     private HSSFWorkbook hwb;
-    private Map<Integer, HSSFCellStyle> styles = new HashMap<Integer, HSSFCellStyle>();
+    private Map<String, HSSFCellStyle> styles = new HashMap<String, HSSFCellStyle>();
 
     /**
      * Transforms the given file, in to a xls one, based on another
@@ -102,19 +102,14 @@ public class CSVtoXlsTransformer {
 
             switch ((compareCell.getCellType())) {
                 case HSSFCell.CELL_TYPE_NUMERIC:
-
+                    newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
                     if (HSSFDateUtil.isCellDateFormatted(compareCell)) {
-                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
-
                         Date bDate = XLSUtil.toDate(columnData);
                         cell.setCellValue(bDate);
-
-
                     } else {
-
-                        newStyle.setDataFormat(compareCell.getCellStyle().getDataFormat());
                         cell.setCellValue(new Double(columnData));
                     }
+
                     break;
                 default:
                     cell.setCellValue(columnData);
@@ -128,13 +123,17 @@ public class CSVtoXlsTransformer {
     }
 
     private HSSFCellStyle getHssfCellStyle(HSSFCell compareCell) {
-        if (styles.containsKey(compareCell.getCellType())) {
-            return styles.get(compareCell.getCellType());
+        String key = String.format("%d-%s", compareCell.getCellType(),
+                compareCell.getCellStyle().getDataFormatString());
+
+
+        if (styles.containsKey(key)) {
+            return styles.get(key);
         }
 
         HSSFCellStyle newStyle = hwb.createCellStyle();
         newStyle.cloneStyleFrom(compareCell.getCellStyle());
-        styles.put(new Integer(compareCell.getCellType()), newStyle);
+        styles.put(key, newStyle);
         return newStyle;
     }
 
