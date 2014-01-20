@@ -1,6 +1,7 @@
 package ro.andonescu.excelcomparator.util;
 
 
+import org.joda.time.DateTime;
 import org.junit.Assert;
 
 /**
@@ -27,8 +28,17 @@ public class XLSUtilTest {
         Assert.assertEquals(false, XLSUtil.isXLSFile("test.csv"));
     }
 
-//    @org.junit.Test
-//    public void toDate() throws Exception {
-//        Assert.assertEquals(false, XLSUtil.toDate("09-DEC-13 13.31.10.451622000"));
-//    }
+    @org.junit.Test
+       public void toDate_withTimeStamp() throws Exception {
+        Assert.assertNotNull(XLSUtil.toDate("2013-12-09 13:31:10.454545"));
+
+        System.out.println(new DateTime(XLSUtil.toDate("2013-12-09 13:31:10.454545").getTime()));
+    }
+
+    @org.junit.Test
+    public void toDate_NoTimestamp() throws Exception {
+        Assert.assertNotNull(XLSUtil.toDate("2013-12-09 13:31:10"));
+
+        System.out.println(new DateTime(XLSUtil.toDate("2013-12-09 13:31:10").getTime()));
+    }
 }
