@@ -1,13 +1,11 @@
 package ro.andonescu.excelcomparator;
 
-import javafx.scene.control.TableColumn;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import ro.andonescu.excelcomparator.util.Constants;
 import ro.andonescu.excelcomparator.util.XLSUtil;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -130,7 +128,7 @@ public class CSVtoXlsTransformer {
     }
 
     private HSSFCellStyle getHssfCellStyle(HSSFCell compareCell) {
-        if(styles.containsKey(compareCell.getCellType())) {
+        if (styles.containsKey(compareCell.getCellType())) {
             return styles.get(compareCell.getCellType());
         }
 
