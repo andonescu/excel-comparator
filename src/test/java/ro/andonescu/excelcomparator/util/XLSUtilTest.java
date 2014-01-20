@@ -26,4 +26,9 @@ public class XLSUtilTest {
     public void testIsXLSFile_isNotOK() throws Exception {
         Assert.assertEquals(false, XLSUtil.isXLSFile("test.csv"));
     }
+
+//    @org.junit.Test
+//    public void toDate() throws Exception {
+//        Assert.assertEquals(false, XLSUtil.toDate("09-DEC-13 13.31.10.451622000"));
+//    }
 }
