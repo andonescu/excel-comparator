@@ -20,6 +20,6 @@ public class MainTest {
 
     @Test
     public void testMain() throws Exception {
-        Main.main(new String[]{"data/expected.xls", "data/actual.xls", "iandonescu"});
+        Main.main(new String[]{"data/expected.xls", "data/actual.xls"});
     }
 }

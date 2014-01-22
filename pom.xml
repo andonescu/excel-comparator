@@ -6,7 +6,7 @@
 
     <groupId>ExcelComparator</groupId>
     <artifactId>ro.andonescu.excelcomparator</artifactId>
-    <version>3.6-SNAPSHOT</version>
+    <version>3.7-SNAPSHOT</version>
 
 
     <dependencies>

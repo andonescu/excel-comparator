@@ -5,7 +5,7 @@ package ro.andonescu.excelcomparator.util;
  */
 public class Constants {
 
-    public static String OUTPUT_PATH = "C:/Users/%s/Desktop/OES-PoC";
+    public static String OUTPUT_PATH = ".";
     public static String OUTPUT_PATH_LOG;
     public static String OUTPUT_PATH_DIFF;
     public static String OUTPUT_PATH_COMPARED;

@@ -51,6 +51,11 @@ public class Comparator {
 
             doActualComparasion(rows, actualSheet);
 
+
+            if (StringUtils.isBlank(log.toString())) {
+                log.append(String.format("no differences between %s - %s", expectedFile, actualFile));
+            }
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -86,8 +91,9 @@ public class Comparator {
             HSSFRow row = (HSSFRow) rows.next();
             HSSFRow row2 = sheet2.getRow(verificationRow);
 
+            int maxCellNumberOne = row.getLastCellNum();
 
-            for (int j = 0; j < row.getLastCellNum(); j++) {
+            for (int j = 0; j < maxCellNumberOne; j++) {
                 // now we will compare the current cel with the one from the other file
                 HSSFCell cellOne = row.getCell(j);
                 HSSFCell cellTwo = row2.getCell(j);

@@ -30,12 +30,8 @@ public class Main {
     }
 
     private static void updateConstants(String[] args) {
-        String defaultUser = "loghinc120";
-        if (args.length >= 3) {
-            defaultUser = args[2];
-        }
 
-        Constants.OUTPUT_PATH = String.format(Constants.OUTPUT_PATH, defaultUser);
+        Constants.OUTPUT_PATH = String.format(Constants.OUTPUT_PATH);
         Constants.update();
     }
 }
