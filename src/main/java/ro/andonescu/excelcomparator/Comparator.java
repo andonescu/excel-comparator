@@ -3,6 +3,7 @@ package ro.andonescu.excelcomparator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import ro.andonescu.excelcomparator.util.Constants;
@@ -22,6 +23,7 @@ public class Comparator {
     private String actualFile;
     private StringBuffer log = new StringBuffer();
     private HSSFWorkbook expectedWorkbook;
+    private HSSFSheet expectedSheet;
     private Date compareDate = new Date();
 
     private int verificationRow = -1;
@@ -40,8 +42,7 @@ public class Comparator {
         try {
 
 
-            HSSFSheet expectedSheet = getExpectedWorkbookFirstSheet(expectedFile);
-            Iterator rows = expectedSheet.rowIterator();
+            expectedSheet = getExpectedWorkbookFirstSheet(expectedFile);
 
             if (!XLSUtil.isXLSFile(actualFile)) {
                 actualFile = new CSVtoXlsTransformer().transformer(actualFile, expectedSheet);
@@ -49,7 +50,7 @@ public class Comparator {
 
             HSSFSheet actualSheet = getActualWorkbookFirstSheet(actualFile);
 
-            doActualComparasion(rows, actualSheet);
+            doActualComparasion(expectedSheet.rowIterator(), actualSheet);
 
 
             if (StringUtils.isBlank(log.toString())) {
@@ -78,25 +79,25 @@ public class Comparator {
         return actualWorkbook.getSheetAt(0);
     }
 
-    private void doActualComparasion(Iterator rows, HSSFSheet sheet2) throws ParseException {
+    private void doActualComparasion(Iterator rows, HSSFSheet actualSheet) throws ParseException {
         HSSFCellStyle textStyle = null;
         HSSFCellStyle dateStyle = null;
-
+        HSSFCellStyle defaultTextStyle = expectedWorkbook.createCellStyle();
         HSSFFont redFont = getRedFont();
-
-        while (rows.hasNext()) {
+        int maxRows = Math.max(expectedSheet.getLastRowNum(), actualSheet.getLastRowNum());
+        for (int verificationRow = 0; verificationRow < maxRows; verificationRow++) {
 
             //iterating each row in the first excel
             verificationRow++;
-            HSSFRow row = (HSSFRow) rows.next();
-            HSSFRow row2 = sheet2.getRow(verificationRow);
+            HSSFRow expectedRow = getRow(expectedSheet, verificationRow);
+            HSSFRow actualRow = getRow(actualSheet, verificationRow);
 
-            int maxCellNumberOne = row.getLastCellNum();
+            int maxCellNumberOne = Math.max(expectedRow.getLastCellNum(), actualRow.getLastCellNum());
 
             for (int j = 0; j < maxCellNumberOne; j++) {
                 // now we will compare the current cel with the one from the other file
-                HSSFCell cellOne = row.getCell(j);
-                HSSFCell cellTwo = row2.getCell(j);
+                HSSFCell cellOne = expectedRow.getCell(j);
+                HSSFCell cellTwo = actualRow.getCell(j);
 
                 String result = verifyCellsValues(cellOne, cellTwo);
 
@@ -105,7 +106,9 @@ public class Comparator {
                     log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
                     boolean hasTextStyle = true;
                     if (cellOne == null) {
-                        cellOne = row.createCell(j);
+                        cellOne = expectedRow.createCell(j);
+                        cellOne.setCellStyle(defaultTextStyle);
+//                        cellOne.setCellValue(" - ");
                     }
 
                     if (cellOne.getCellStyle() != null
@@ -129,6 +132,20 @@ public class Comparator {
         }
     }
 
+    private HSSFRow getRow(HSSFSheet actualSheet, int verificationRow) {
+        HSSFRow actualRow = actualSheet.getRow(verificationRow);
+        actualRow = verifyAndCreateRowIfNull(actualSheet, verificationRow, actualRow);
+        return actualRow;
+    }
+
+    private HSSFRow verifyAndCreateRowIfNull(HSSFSheet sheet, int verificationRow, HSSFRow row) {
+        if (row == null) {
+            return sheet.createRow(verificationRow);
+        }
+
+        return row;
+    }
+
     private HSSFCellStyle updateStyleIfNeeded(HSSFCellStyle dateStyle, HSSFFont redFont, HSSFCell cellOne) {
         if (dateStyle == null) {
             dateStyle = updateStyle(redFont, cellOne);
@@ -140,6 +157,8 @@ public class Comparator {
         HSSFCellStyle textStyle;
         textStyle = expectedWorkbook.createCellStyle();
         textStyle.cloneStyleFrom(cell.getCellStyle());
+        textStyle.setFillBackgroundColor(new HSSFColor.BRIGHT_GREEN().getIndex());
+        textStyle.setFillPattern(HSSFCellStyle.FINE_DOTS);
         textStyle.setFont(redFont);
         return textStyle;
     }

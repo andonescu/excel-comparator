@@ -60,7 +60,12 @@ public class CSVtoXlsTransformer {
 
                     HSSFCell cell = row.createCell(j);
                     String columnData = cleanData(rowDataList, j);
-                    HSSFCell compareCell = compareSheet.getRow(i).getCell(j);
+                    HSSFRow compareRow = compareSheet.getRow(i);
+                    HSSFCell compareCell = null;
+                    // verify if that row exists in expected file
+                    if (compareRow != null) {
+                        compareCell = compareRow.getCell(j);
+                    }
 
                     storeDataToCell(cell, columnData, compareCell);
 
