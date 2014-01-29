@@ -88,7 +88,6 @@ public class Comparator {
         for (int verificationRow = 0; verificationRow < maxRows; verificationRow++) {
 
             //iterating each row in the first excel
-            verificationRow++;
             HSSFRow expectedRow = getRow(expectedSheet, verificationRow);
             HSSFRow actualRow = getRow(actualSheet, verificationRow);
 
@@ -103,7 +102,7 @@ public class Comparator {
 
                 if (!result.isEmpty()) {
                     // so we have an error here - log this error in the output file
-                    log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j, result));
+                    log.append(String.format("row %d - col - %d   --  %s   \n\r ------------------------------------- \n\r", verificationRow, j + 1, result));
                     boolean hasTextStyle = true;
                     if (cellOne == null) {
                         cellOne = expectedRow.createCell(j);
