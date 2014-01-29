@@ -203,8 +203,10 @@ public class Comparator {
         if (isBlank(a) && isBlank(b)) {
             return sb.toString();
         }
-        if (a != null && b == null || a == null && b != null) {
-            return " different cell types - please check ";
+        if (a != null && b == null) {
+            return " different values " + getCellValue(a) + " ::: [empty]";
+        } else if (a == null && b != null) {
+            return " different values [empty] ::: " + getCellValue(b);
         }
 //
         switch ((a.getCellType())) {
@@ -237,6 +239,21 @@ public class Comparator {
 
 
         return sb.toString();
+    }
+
+    private String getCellValue(HSSFCell a) {
+        switch ((a.getCellType())) {
+            case HSSFCell.CELL_TYPE_NUMERIC:
+
+                if (HSSFDateUtil.isCellDateFormatted(a)) {
+                    return a.getDateCellValue().toString();
+
+                }
+
+                return String.valueOf(a.getNumericCellValue());
+        }
+
+        return a.getStringCellValue();
     }
 
     private boolean isBlank(HSSFCell cell) {
