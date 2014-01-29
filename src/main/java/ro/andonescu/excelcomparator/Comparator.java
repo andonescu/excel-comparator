@@ -85,7 +85,7 @@ public class Comparator {
         HSSFCellStyle defaultTextStyle = expectedWorkbook.createCellStyle();
         HSSFFont redFont = getRedFont();
         int maxRows = Math.max(expectedSheet.getLastRowNum(), actualSheet.getLastRowNum());
-        for (int verificationRow = 0; verificationRow < maxRows; verificationRow++) {
+        for (int verificationRow = 0; verificationRow < maxRows + 1; verificationRow++) {
 
             //iterating each row in the first excel
             HSSFRow expectedRow = getRow(expectedSheet, verificationRow);
